@@ -867,6 +867,7 @@ html.lenis, html.lenis body { height: auto; }
   .about-round { right: -60px; bottom: -40px; width: 190px; height: 190px; }
   /* services: tiles get shorter first when the area is fitted to the window (--g, --sdy from main.js) */
   .s-services .tile { height: calc(var(--dh) * var(--g, 1) * 1px); }
+  .s-services .tile--stones > img { width: calc(1184.4px * var(--g, 1)); left: calc(-44.1px * var(--g, 1)); }   /* keep the stones photo in proportion when tiles get shorter */
   .s-services .tile--row2 { top: calc((2369 + 233 * var(--g, 1)) * 1px - var(--t)); }
   .s-services .svc-d { top: calc(var(--dt) * 1px - var(--t) + var(--sdy, 0px)); }
   .s-services.is-compact .tile-num { display: none; }

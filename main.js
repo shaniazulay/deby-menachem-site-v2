@@ -31,10 +31,10 @@
     } else {
       var z = parseFloat(root.style.getPropertyValue('--z')) || 1;
       var screenH = window.innerHeight / z;           // window height in design px
-      // Hero: card from y=65 to 41px above the fold
-      var H = Math.max(440, screenH - 65 - 41);
-      var s = Math.max(0.6, Math.min(1, (H - 190) / 404));   // centre group = title → buttons, 404px tall
-      var top = Math.max(95, (H - 404 * s) / 2 - 15 * s);
+      // Hero: card from y=65 down to where the word marquee (46px gap + 96px strip) still fits on the first screen
+      var H = Math.max(440, screenH - 65 - 46 - 96 - 14);
+      var s = Math.max(0.6, Math.min(1, (H - 160) / 404));   // centre group = title → buttons, 404px tall
+      var top = Math.max(80, (H - 404 * s) / 2 - 15 * s);
       root.style.setProperty('--hd', (H - 794) + 'px');
       root.style.setProperty('--hs', s);
       root.style.setProperty('--hy', (top - 180) + 'px');
@@ -87,7 +87,7 @@
       if (kt === 0.68) break;
     }
     media.style.height = mediaH + 'px';
-    sec.style.height = (20 + Math.max(colH, mediaH + 60) + 154) + 'px';
+    sec.style.height = (20 + Math.max(colH, mediaH + 60) + 110) + 'px';
   }
 
   // Services: tiles get shorter first (down to 50%); only if that is not enough the whole area
@@ -103,7 +103,7 @@
     var avail = window.innerHeight / z - FIT_PAD;
     var CONTENT = 1020, TILES = 443;                       // title → last description, tile block height
     if (avail >= CONTENT) return;
-    var g = Math.max(0.5, Math.min(1, (avail - (CONTENT - TILES)) / TILES));
+    var g = Math.max(0.8, Math.min(1, (avail - (CONTENT - TILES)) / TILES));   // tiles keep ≥80% of their height
     var lost = TILES * (1 - g);
     sec.style.setProperty('--g', g);
     sec.classList.toggle('is-compact', g < 0.75);   // short tiles: the number badge would collide with the label
@@ -111,7 +111,7 @@
     sec.style.height = (1200 - lost) + 'px';
     var h = CONTENT - lost;
     if (h > avail) {
-      var k = Math.max(0.62, avail / h);
+      var k = Math.max(0.72, avail / h);
       sec.style.zoom = k;
       sec.style.width = (1440 / k) + 'px';
       sec.style.setProperty('--hx', (1 / k) + 'px');
@@ -120,7 +120,13 @@
 
   var fitTimer;
   window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer = setTimeout(fitScreen, 80); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitScreen);
+  // Text heights change once the web fonts arrive – measure again then (and after full load)
+  var refit = function () { clearTimeout(fitTimer); fitTimer = setTimeout(fitScreen, 60); };
+  if (document.fonts) {
+    if (document.fonts.ready) document.fonts.ready.then(refit);
+    if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', refit);
+  }
+  window.addEventListener('load', refit);
   fitScreen();
 
   // ---------- Mobile menu ----------
