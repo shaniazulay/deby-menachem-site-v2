@@ -15,12 +15,16 @@
   setZoom();
 
   // ---------- Desktop screen fit: hero = exactly one screen, every other area fits the window height ----------
-  var FIT_SECTIONS = '.s-about, .s-services, .s-why, .s-philo, .s-forwhom, .s-testi, .s-gift, .s-faq, .s-contact';
+  // Wide blocks (text columns, images, tiles, hairlines) stretch with the area when it is height-fitted
+  document.querySelectorAll('[style*="--dw"]').forEach(function (el) {
+    if (parseFloat(el.style.getPropertyValue('--dw')) >= 200 && !el.classList.contains('btn')) el.classList.add('sx');
+  });
+  var FIT_SECTIONS = '.s-why, .s-philo, .s-forwhom, .s-testi, .s-gift, .s-faq, .s-contact';
   var MIN_FIT = 0.55;   // never shrink an area below 55% – text would get too small to read
   var FIT_PAD = 60;     // breathing room kept around an area (design px)
   function fitScreen() {
     var sections = document.querySelectorAll(FIT_SECTIONS);
-    sections.forEach(function (s) { s.style.zoom = ''; });
+    sections.forEach(function (s) { s.style.zoom = ''; s.style.width = ''; s.style.removeProperty('--hx'); });
     var off = !desktopQuery.matches || root.classList.contains('static');
     if (off) {
       ['--hd', '--hy', '--hs'].forEach(function (p) { root.style.removeProperty(p); });
@@ -46,11 +50,74 @@
         if (!isFinite(topY)) return;
         var contentH = (bottomY - topY) / z;
         var k = Math.max(MIN_FIT, Math.min(1, avail / contentH));
-        if (k < 0.999) sec.style.zoom = k;
+        if (k < 0.999) {
+          // Zoom the area down for height, but widen it by 1/k so it still spans the full window width:
+          // horizontal positions and wide blocks (.sx) scale back up by --hx, only heights and text shrink.
+          sec.style.zoom = k;
+          sec.style.width = (1440 / k) + 'px';
+          sec.style.setProperty('--hx', (1 / k) + 'px');
+        }
       });
     }
+    fitAbout(off);
+    fitServices(off);
     if (window.ScrollTrigger) window.ScrollTrigger.refresh();
   }
+  // About: the photo shrinks to the window height (ring / badge stay on its corners) and the
+  // text column zooms down only as much as needed – it keeps its 560px width, so it re-wraps into fewer lines.
+  function fitAbout(off) {
+    var sec = document.querySelector('.s-about');
+    var col = sec && sec.querySelector('.about-col');
+    var media = sec && sec.querySelector('.about-media');
+    if (!col || !media) return;
+    sec.style.height = ''; media.style.height = '';
+    col.style.zoom = ''; col.style.removeProperty('--hx');
+    if (off) return;
+    var z = parseFloat(root.style.getPropertyValue('--z')) || 1;
+    var avail = window.innerHeight / z - FIT_PAD;
+    if (avail >= 929) return;                              // design: 20px + 849px + 60px ring overhang
+    var mediaH = Math.max(360, avail - 80);
+    var target = Math.max(mediaH + 60, avail - 20);
+    var kt = 1, colH = col.getBoundingClientRect().height / z;
+    for (var i = 0; i < 5 && colH > target + 1; i++) {
+      kt = Math.max(0.68, kt * target / colH);
+      col.style.zoom = kt;
+      col.style.setProperty('--hx', (1 / kt) + 'px');
+      colH = col.getBoundingClientRect().height / z;
+      if (kt === 0.68) break;
+    }
+    media.style.height = mediaH + 'px';
+    sec.style.height = (20 + Math.max(colH, mediaH + 60) + 154) + 'px';
+  }
+
+  // Services: tiles get shorter first (down to 50%); only if that is not enough the whole area
+  // zooms down – widened by 1/k so it keeps spanning the full window width.
+  function fitServices(off) {
+    var sec = document.querySelector('.s-services');
+    if (!sec) return;
+    sec.style.zoom = ''; sec.style.width = ''; sec.style.height = '';
+    ['--hx', '--g', '--sdy'].forEach(function (p) { sec.style.removeProperty(p); });
+    sec.classList.remove('is-compact');
+    if (off) return;
+    var z = parseFloat(root.style.getPropertyValue('--z')) || 1;
+    var avail = window.innerHeight / z - FIT_PAD;
+    var CONTENT = 1020, TILES = 443;                       // title → last description, tile block height
+    if (avail >= CONTENT) return;
+    var g = Math.max(0.5, Math.min(1, (avail - (CONTENT - TILES)) / TILES));
+    var lost = TILES * (1 - g);
+    sec.style.setProperty('--g', g);
+    sec.classList.toggle('is-compact', g < 0.75);   // short tiles: the number badge would collide with the label
+    sec.style.setProperty('--sdy', (-lost) + 'px');
+    sec.style.height = (1200 - lost) + 'px';
+    var h = CONTENT - lost;
+    if (h > avail) {
+      var k = Math.max(0.62, avail / h);
+      sec.style.zoom = k;
+      sec.style.width = (1440 / k) + 'px';
+      sec.style.setProperty('--hx', (1 / k) + 'px');
+    }
+  }
+
   var fitTimer;
   window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer = setTimeout(fitScreen, 80); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitScreen);

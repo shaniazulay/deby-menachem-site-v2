@@ -34,8 +34,8 @@
   @media (min-width: 1100px) {
     section, .s-footer { --t: calc(var(--st) * 1px); height: calc(var(--sh) * 1px); }
     .a, .r {
-      right: calc(var(--dr) * 1px);
-      left: calc(var(--dl) * 1px);
+      right: calc(var(--dr) * var(--hx, 1px));
+      left: calc(var(--dl) * var(--hx, 1px));
       width: calc(var(--dw) * 1px);
       height: calc(var(--dh) * 1px);
       translate: calc(var(--dtx) * 1%) 0;
@@ -43,6 +43,8 @@
     }
     .a { top: calc(var(--dt) * 1px - var(--t)); }
     .r { top: calc(var(--dt) * 1px); }
+    /* wide blocks keep their full design width inside a height-fitted area (see fitScreen) */
+    .a.sx, .r.sx { width: calc(var(--dw) * var(--hx, 1px)); }
   }
 
   @media (max-width: 1099.98px) {
@@ -464,14 +466,14 @@ a.f-link:hover, .f-mline a:hover { color: #fff; }
   .bullet { width: 20px; height: 20px; }
 
   .s-faq { height: auto; min-height: 782px; padding-bottom: 169px; }
-  .faq-flow { width: 600px; margin: 6px 722px 0 0; }
+  .faq-flow { width: calc(600 * var(--hx, 1px)); margin: 6px calc(722 * var(--hx, 1px)) 0 0; }
   .faq-list { border-bottom: 1px solid rgba(43, 31, 26, .18); }
   .faq-item { border-top: 1px solid rgba(43, 31, 26, .18); }
   .faq-item button { padding: 27px 4px 28px 60px; font-size: 22px; line-height: 32px; }
   .faq-toggle { left: 4px; top: 23px; font-size: 34px; line-height: 34px; }
   .faq-a { margin-top: -14px; padding: 0 4px 28px 0; }
   .faq-a p { max-width: 540px; font-size: 19px; line-height: 32px; }
-  .faq-card { position: absolute; left: 734px; top: 294px; width: 470px; height: 250px; border-radius: 23px; }
+  .faq-card { position: absolute; left: calc(734 * var(--hx, 1px)); top: 294px; width: 470px; height: 250px; border-radius: 23px; }
   .faq-card img { width: 26px; height: 30px; }
   .faq-card-title { font-size: 26px; }
   .faq-card-text { font-size: 19px; line-height: 30px; }
@@ -819,4 +821,45 @@ html.lenis, html.lenis body { height: auto; }
   .s-hero .corner-note { top: calc(640px + var(--hd, 0px)); }
   .s-hero .hl { top: calc(651px + var(--hd, 0px)); }
   .hero-center { transform: translateY(var(--hy, 0px)) scale(var(--hs, 1)); transform-origin: 50% 180px; }
+}
+
+/* ---------- About: flowing text column + media group (anchored corners) ---------- */
+.about-col > * { position: relative; }
+.about-col .btn { display: flex; }
+.about-media .about-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.about-media .inset { position: absolute; }
+.about-media .about-badge { position: absolute; white-space: nowrap; }
+.about-ring, .about-round { position: absolute; }
+@media (min-width: 1100px) {
+  .about-sub { margin-top: 16px; }
+  .about-col .divider { margin-top: 20px; }
+  .about-col .divider + .about-p { margin-top: 18px; }
+  .about-p + .about-p { margin-top: 14px; }
+  .about-subhead { margin-top: 24px; line-height: 29px; }
+  .about-subhead + .about-p { margin-top: 10px; }
+  .about-cta { margin-top: 36px; width: 190px; height: 56px; }
+  .about-media .about-img { border-radius: 28px; }
+  .about-media .inset { inset: 16px; border-radius: 20px; }
+  .about-media .about-badge { left: 24px; top: 24px; height: 48px; }
+  .about-ring { right: -80px; bottom: -60px; width: 230px; height: 230px; }
+  .about-round { right: -60px; bottom: -40px; width: 190px; height: 190px; }
+  /* services: tiles get shorter first when the area is fitted to the window (--g, --sdy from main.js) */
+  .s-services .tile { height: calc(var(--dh) * var(--g, 1) * 1px); }
+  .s-services .tile--row2 { top: calc((2369 + 233 * var(--g, 1)) * 1px - var(--t)); }
+  .s-services .svc-d { top: calc(var(--dt) * 1px - var(--t) + var(--sdy, 0px)); }
+  .s-services.is-compact .tile-num { display: none; }
+}
+@media (max-width: 1099.98px) {
+  .about-sub { margin-top: 12px; }
+  .about-col .divider { margin-top: 18px; }
+  .about-col .divider + .about-p { margin-top: 18px; }
+  .about-p + .about-p { margin-top: 12px; }
+  .about-subhead { margin-top: 20px; line-height: 25px; }
+  .about-subhead + .about-p { margin-top: 8px; }
+  .about-cta { margin-top: 24px; width: 350px; height: 54px; }
+  .about-media .about-img { border-radius: 24px; }
+  .about-media .inset { inset: 12px; border-radius: 16px; }
+  .about-media .about-badge { left: 146px; top: 16px; width: 188px; height: 37px; }
+  .about-ring { left: -6px; bottom: -46px; width: 150px; height: 150px; }
+  .about-round { left: 7px; bottom: -33px; width: 124px; height: 124px; }
 }
