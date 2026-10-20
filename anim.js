@@ -177,25 +177,52 @@
     if (!preloader) { lenis.start(); intro.play(); return; }
     var first = true;
     try { first = !sessionStorage.getItem('dm-seen'); sessionStorage.setItem('dm-seen', '1'); } catch (e) {}
-    var pct = $('.pl-pct', preloader);
-    var counter = { v: 0 };
+    var q = function (s) { return preloader.querySelector(s); };
+    var stones = [q('.pl-s1'), q('.pl-s2'), q('.pl-s3')];
+    var leaf = q('.pl-leaf'), logo = q('.pl-logo'), ring = q('.pl-ring'), bar = q('.pl-ring-bar');
+    var pct = q('.pl-pct'), counter = { v: 0 };
+    var curtain = { borderRadius: '0 0 50% 50% / 0 0 24vh 24vh', yPercent: -100, duration: 1.25, ease: 'expo.inOut' };
     var tl = gsap.timeline({
-      onComplete: function () {
-        preloader.remove();
-        lenis.start();
-        ScrollTrigger.refresh();
-      }
+      onComplete: function () { preloader.remove(); lenis.start(); ScrollTrigger.refresh(); }
     });
-    if (first) {
-      tl.from('.pl-logo', { autoAlpha: 0, y: 24, filter: 'blur(10px)', duration: 1.1, ease: 'expo.out' }, 0)
-        .to('.pl-line i', { scaleX: 1, duration: 1.5, ease: 'power3.inOut' }, 0.15)
-        .to(counter, { v: 100, duration: 1.5, ease: 'power3.inOut', onUpdate: function () { pct.textContent = Math.round(counter.v); } }, 0.15)
-        .to('.pl-inner', { autoAlpha: 0, y: -24, duration: 0.6, ease: 'power2.in' }, 1.75);
-    } else {
-      tl.set('.pl-inner', { autoAlpha: 0 });
+
+    if (!first) {   // returning visitor: a short, quiet version
+      gsap.set([stones, leaf, bar], { clearProps: 'all' });
+      gsap.set(bar, { strokeDashoffset: 0 });
+      gsap.set([q('.pl-line'), pct], { autoAlpha: 0 });
+      tl.from(q('.pl-inner'), { autoAlpha: 0, scale: 0.96, duration: 0.5, ease: 'power2.out' })
+        .to(q('.pl-inner'), { autoAlpha: 0, y: -30, duration: 0.45, ease: 'power2.in' }, 0.55)
+        .to(preloader, curtain, 0.7)
+        .add(function () { intro.play(); }, 1.05);
+      return;
     }
-    tl.to(preloader, { clipPath: 'inset(0% 0% 100% 0%)', duration: 1.1, ease: 'expo.inOut' }, first ? 2.05 : 0.05)
-      .add(function () { intro.play(); }, first ? 2.4 : 0.35);
+
+    gsap.set(stones, { y: -16, autoAlpha: 0, transformOrigin: '50% 100%' });
+    gsap.set(leaf, { scale: 0, rotation: -40, autoAlpha: 0, transformOrigin: '30% 100%' });
+    gsap.set(logo, { clipPath: 'inset(0% 0% 0% 100%)', filter: 'blur(10px)' });
+    gsap.set(q('.pl-line i'), { scaleX: 0 });
+    gsap.set(pct, { autoAlpha: 0 });
+
+    tl.from(ring, { autoAlpha: 0, scale: 0.85, rotation: -150, duration: 1.2, ease: 'expo.out' }, 0)
+      // progress: the ring closes while the counter runs
+      .to(bar, { strokeDashoffset: 0, duration: 2.3, ease: 'power2.inOut' }, 0.2)
+      .to(counter, { v: 100, duration: 2.3, ease: 'power2.inOut', onUpdate: function () { pct.textContent = String(Math.round(counter.v)).padStart(2, '0'); } }, 0.2)
+      .to(pct, { autoAlpha: 1, duration: 0.6 }, 0.35)
+      // the stones are stacked one on top of the other, then the leaf sprouts
+      .to(stones[0], { y: 0, autoAlpha: 1, duration: 0.75, ease: 'back.out(2.4)' }, 0.35)
+      .to(stones[1], { y: 0, autoAlpha: 1, duration: 0.75, ease: 'back.out(2.4)' }, 0.65)
+      .to(stones[2], { y: 0, autoAlpha: 1, duration: 0.75, ease: 'back.out(2.4)' }, 0.95)
+      .to(stones, { scaleY: 0.92, scaleX: 1.04, duration: 0.12, ease: 'power1.out', yoyo: true, repeat: 1, stagger: 0.04 }, 1.32)
+      .to(leaf, { scale: 1, rotation: 0, autoAlpha: 1, duration: 0.9, ease: 'back.out(3)' }, 1.45)
+      // the white logo is written in from the right, coming into focus
+      .to(logo, { clipPath: 'inset(0% 0% 0% 0%)', filter: 'blur(0px)', duration: 1.5, ease: 'expo.inOut' }, 0.9)
+      .to(q('.pl-line i'), { scaleX: 1, duration: 1.1, ease: 'expo.inOut' }, 1.5)
+      .to(logo, { backgroundPosition: '0% 0', duration: 1.3, ease: 'power2.inOut' }, 1.9)
+      // exit: the content lifts away, then the dark curtain rises with a soft curve
+      .to(q('.pl-inner'), { autoAlpha: 0, y: -40, filter: 'blur(6px)', duration: 0.7, ease: 'power2.in' }, 2.75)
+      .to(q('.pl-glow'), { autoAlpha: 0, duration: 0.6 }, 2.75)
+      .to(preloader, curtain, 3.05)
+      .add(function () { intro.play(); }, 3.4);
   }
 
   /* ---------------- Scroll scenes ---------------- */

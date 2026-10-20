@@ -661,20 +661,42 @@ html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
 
-/* Preloader */
+/* Preloader – dark, white logo, stacking stones emblem (timeline in anim.js) */
 .preloader { display: none; }
 .anim .preloader {
-  display: grid; place-items: center; position: fixed; inset: 0; z-index: 200;
-  background: var(--sand); clip-path: inset(0 0 0 0);
-  animation: pl-failsafe .6s ease 7s forwards;   /* never trap the page if JS fails */
+  display: grid; place-items: center; position: fixed; inset: 0; z-index: 200; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 42%, #3b2b23 0%, #2b1f1a 42%, #1a120f 100%);
+  animation: pl-failsafe .6s ease 8s forwards;   /* never trap the page if JS fails */
 }
-.pl-inner { display: flex; flex-direction: column; align-items: center; gap: 22px; }
-.pl-logo { width: 220px; height: auto; }
-.pl-line { position: relative; display: block; width: 170px; height: 1px; background: rgba(43, 31, 26, .14); overflow: hidden; }
-.pl-line i { position: absolute; inset: 0; background: var(--brown); transform: scaleX(0); transform-origin: 100% 50%; }
-.pl-pct { font-family: 'Bellefair', serif; font-size: 18px; letter-spacing: .25em; color: var(--mocha); font-variant-numeric: tabular-nums; }
+.pl-glow {
+  position: absolute; left: 50%; top: 44%; width: 70vmin; height: 70vmin; margin: -35vmin 0 0 -35vmin; border-radius: 50%;
+  background: radial-gradient(circle, rgba(217, 180, 140, .16), rgba(217, 180, 140, 0) 65%);
+  animation: pl-breathe 4.5s ease-in-out infinite; pointer-events: none;
+}
+@keyframes pl-breathe { 50% { transform: scale(1.18); opacity: .7; } }
+.pl-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
+.pl-emblem { position: relative; width: 118px; height: 118px; display: grid; place-items: center; }
+.pl-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.pl-ring circle { fill: none; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.pl-ring-track { stroke: rgba(255, 255, 255, .12); }
+.pl-ring-bar { stroke: #e9d8c6; stroke-dasharray: 1; stroke-dashoffset: 1; stroke-linecap: round; }
+.pl-stones { width: 40px; height: 46px; overflow: visible; }
+.pl-stones path { fill: #fff; transform-box: fill-box; transform-origin: 50% 100%; }
+.pl-logo {
+  width: 250px; height: 75px; margin-top: 30px;
+  background: linear-gradient(105deg, #fff 38%, #e3c9ae 50%, #fff 62%) 100% 0 / 300% 100%;
+  -webkit-mask: url('assets/img/logo-mask.png') center / contain no-repeat;
+  mask: url('assets/img/logo-mask.png') center / contain no-repeat;
+}
+.pl-line { position: relative; display: block; width: 120px; height: 1px; margin-top: 26px; background: rgba(255, 255, 255, .12); overflow: hidden; }
+.pl-line i { position: absolute; inset: 0; background: rgba(255, 255, 255, .7); transform: scaleX(0); }
+.pl-pct { margin-top: 14px; font-family: 'Bellefair', serif; font-size: 15px; letter-spacing: .35em; color: rgba(255, 255, 255, .55); font-variant-numeric: tabular-nums; }
 @keyframes pl-failsafe { to { opacity: 0; visibility: hidden; } }
-@media (max-width: 1099.98px) { .pl-logo { width: 170px; } }
+@media (max-width: 1099.98px) {
+  .pl-emblem { width: 96px; height: 96px; }
+  .pl-stones { width: 32px; height: 37px; }
+  .pl-logo { width: 196px; height: 59px; margin-top: 24px; }
+}
 
 /* Split lines never clip descenders */
 .split-line { padding-bottom: .06em; margin-bottom: -.06em; }
