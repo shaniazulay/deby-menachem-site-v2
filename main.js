@@ -32,23 +32,34 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
   }
 
-  // ---------- FAQ accordion: one open item at a time ----------
+  // ---------- FAQ accordion: one open item at a time (animated height in motion mode) ----------
   var faqItems = document.querySelectorAll('[data-faq] .faq-item');
-  faqItems.forEach(function (item) {
-    var btn = item.querySelector('button');
+  var animated = function () { return root.classList.contains('anim') && window.gsap; };
+  var closePanel = function (item) {
     var panel = item.querySelector('.faq-a');
-    btn.addEventListener('click', function () {
+    item.classList.remove('is-open');
+    item.querySelector('button').setAttribute('aria-expanded', 'false');
+    if (panel.hidden) return;
+    if (!animated()) { panel.hidden = true; return; }
+    gsap.to(panel, { height: 0, marginTop: 0, opacity: 0, duration: 0.55, ease: 'power3.inOut', overwrite: true,
+      onComplete: function () { panel.hidden = true; gsap.set(panel, { clearProps: 'height,marginTop,opacity' }); } });
+  };
+  var openPanel = function (item) {
+    var panel = item.querySelector('.faq-a');
+    item.classList.add('is-open');
+    item.querySelector('button').setAttribute('aria-expanded', 'true');
+    panel.hidden = false;
+    if (!animated()) return;
+    var mt = getComputedStyle(panel).marginTop;
+    gsap.fromTo(panel, { height: 0, marginTop: 0, opacity: 0 }, { height: 'auto', marginTop: mt, opacity: 1, duration: 0.7, ease: 'expo.out', overwrite: true,
+      onComplete: function () { gsap.set(panel, { clearProps: 'height,marginTop,opacity' }); if (window.ScrollTrigger) ScrollTrigger.refresh(); } });
+    gsap.from(panel.querySelector('p'), { y: 12, duration: 0.8, ease: 'expo.out' });
+  };
+  faqItems.forEach(function (item) {
+    item.querySelector('button').addEventListener('click', function () {
       var willOpen = !item.classList.contains('is-open');
-      faqItems.forEach(function (other) {
-        other.classList.remove('is-open');
-        other.querySelector('button').setAttribute('aria-expanded', 'false');
-        other.querySelector('.faq-a').hidden = true;
-      });
-      if (willOpen) {
-        item.classList.add('is-open');
-        btn.setAttribute('aria-expanded', 'true');
-        panel.hidden = false;
-      }
+      faqItems.forEach(function (other) { if (other !== item || !willOpen) closePanel(other); });
+      if (willOpen) openPanel(item);
     });
   });
 
@@ -80,7 +91,7 @@
     var go = function (step) {
       current = (current + step + reviews.length) % reviews.length;
       focus.classList.add('is-fading');
-      setTimeout(function () { render(); focus.classList.remove('is-fading'); }, 220);
+      setTimeout(function () { render(); focus.classList.remove('is-fading'); desk.dispatchEvent(new CustomEvent('testi:change')); }, 220);
     };
     desk.querySelectorAll('[data-dir]').forEach(function (b) {
       b.addEventListener('click', function () { go(b.dataset.dir === 'next' ? 1 : -1); });

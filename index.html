@@ -23,10 +23,18 @@
       var w = d.documentElement.clientWidth, desk = w >= 1100;
       d.documentElement.style.setProperty('--z', desk ? Math.min(w, 1920) / 1440 : Math.min(w, 546) / 390);
       if (/[?&]static\b/.test(location.search)) d.documentElement.classList.add('static');
+      else if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) d.documentElement.classList.add('anim');
     })(document);
   </script>
 </head>
 <body>
+  <div class="preloader" aria-hidden="true">
+    <div class="pl-inner">
+      <img class="pl-logo" src="assets/img/logo.webp" alt="" width="220" height="66">
+      <span class="pl-line"><i></i></span>
+      <span class="pl-pct">0</span>
+    </div>
+  </div>
   <a class="skip-link" href="#main">דילוג לתוכן</a>
 
   <!-- ============ Header ============ -->
@@ -450,5 +458,10 @@
   </a>
 
   <script src="main.js" defer></script>
+  <script src="assets/vendor/gsap.min.js" defer></script>
+  <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="assets/vendor/SplitText.min.js" defer></script>
+  <script src="assets/vendor/lenis.min.js" defer></script>
+  <script src="anim.js" defer></script>
 </body>
 </html>
