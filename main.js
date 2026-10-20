@@ -17,7 +17,8 @@
   // ---------- Desktop screen fit: hero = exactly one screen, every other area fits the window height ----------
   // Wide blocks (text columns, images, tiles, hairlines) stretch with the area when it is height-fitted
   document.querySelectorAll('[style*="--dw"]').forEach(function (el) {
-    if (parseFloat(el.style.getPropertyValue('--dw')) >= 200 && !el.classList.contains('btn')) el.classList.add('sx');
+    // (the hero paragraph keeps its width so it wraps exactly like the design)
+    if (parseFloat(el.style.getPropertyValue('--dw')) >= 200 && !el.classList.contains('btn') && !el.classList.contains('hero-sub')) el.classList.add('sx');
   });
   var FIT_SECTIONS = '.s-why, .s-philo, .s-forwhom, .s-testi, .s-gift, .s-faq, .s-contact';
   var MIN_FIT = 0.55;   // never shrink an area below 55% – text would get too small to read
@@ -25,19 +26,24 @@
   function fitScreen() {
     var sections = document.querySelectorAll(FIT_SECTIONS);
     sections.forEach(function (s) { s.style.zoom = ''; s.style.width = ''; s.style.removeProperty('--hx'); });
+    var heroSec = document.querySelector('.s-hero');
+    if (heroSec) { heroSec.style.zoom = ''; heroSec.style.width = ''; heroSec.style.height = ''; heroSec.style.removeProperty('--hx'); }
     var off = !desktopQuery.matches || root.classList.contains('static');
-    if (off) {
-      ['--hd', '--hy', '--hs'].forEach(function (p) { root.style.removeProperty(p); });
-    } else {
+    if (!off) {
       var z = parseFloat(root.style.getPropertyValue('--z')) || 1;
       var screenH = window.innerHeight / z;           // window height in design px
-      // Hero: card from y=65 down to where the word marquee (46px gap + 96px strip) still fits on the first screen
-      var H = Math.max(440, screenH - 65 - 46 - 96 - 14);
-      var s = Math.max(0.6, Math.min(1, (H - 160) / 404));   // centre group = title → buttons, 404px tall
-      var top = Math.max(80, (H - 404 * s) / 2 - 15 * s);
-      root.style.setProperty('--hd', (H - 794) + 'px');
-      root.style.setProperty('--hs', s);
-      root.style.setProperty('--hy', (top - 180) + 'px');
+      // Hero: the whole Figma composition is scaled uniformly (zoom k) so the card + the first
+      // part of the word marquee fit on the first screen; it is widened by 1/k so it still spans
+      // the full window width (horizontal positions and wide blocks scale back up via --hx).
+      // The card keeps its 65px offset under the nav.
+      var hero = document.querySelector('.s-hero');
+      var kh = Math.max(0.5, Math.min(1, (screenH - 65 - 80) / 840));   // 840 = card + gap below it; 80 = visible marquee
+      if (kh < 0.999) {
+        hero.style.zoom = kh;
+        hero.style.width = (1440 / kh) + 'px';
+        hero.style.setProperty('--hx', (1 / kh) + 'px');
+        hero.style.height = (840 + 65 / kh) + 'px';
+      }
       // Other areas: measure the real content and zoom the area down if it is taller than the window
       var avail = screenH - FIT_PAD;
       sections.forEach(function (sec) {

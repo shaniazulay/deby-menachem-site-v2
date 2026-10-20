@@ -352,7 +352,7 @@ section, .s-footer { position: relative; display: block; }
 /* dark band behind the footer, full viewport width (only visible when the stage is narrower than the window) */
 body { position: relative; }
 body::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--foot-h) * var(--z)); background: var(--brown); z-index: -1; }
-.footer-wave { transform: rotate(180deg); }
+.footer-wave { transform: rotate(180deg) translateY(2px); }   /* lifted 2px: no 1px brown seam above the wave */
 .footer-logo {
   background: #fff;
   -webkit-mask: url('assets/img/logo-mask.png') center / 100% 100% no-repeat;
@@ -643,7 +643,8 @@ a.f-link:hover, .f-mline a:hover { color: #fff; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .mq-track { animation: none; }
-  *, *::before, *::after { transition-duration: .01ms !important; }
+  /* transition: none (not a 0.01ms duration) – a near-zero transition on zoom made main.js measure stale heights */
+  *, *::before, *::after { transition: none !important; }
 }
 
 /* =====================================================================
@@ -828,21 +829,20 @@ html.lenis, html.lenis body { height: auto; }
 
 /* =====================================================================
    DESKTOP SCREEN FIT  (vars set by main.js → fitScreen)
-   - The hero card always fills the first screen exactly (--hd = extra/missing
-     height vs. the 794px design); its centre group is re-centred / scaled.
+   - The hero is scaled as one unit (zoom + --hx) so hero + the word marquee
+     fit the first screen, keeping the Figma composition and the full window width.
    - Taller areas get a per-section zoom so each one fits the window height.
    ===================================================================== */
 .hero-center { position: absolute; inset: 0; pointer-events: none; }
 .hero-center > * { pointer-events: auto; }
 @media (min-width: 1100px) {
   main > section { width: 1440px; margin-inline: auto; }
-  .s-hero { height: calc(905px + var(--hd, 0px)); }
-  .hero-card { height: calc(794px + var(--hd, 0px)); }
-  .hero-inset { height: calc(706px + var(--hd, 0px)); }
-  .hero-wave { top: calc(734px + var(--hd, 0px)); }
-  .s-hero .corner-note { top: calc(640px + var(--hd, 0px)); }
-  .s-hero .hl { top: calc(651px + var(--hd, 0px)); }
-  .hero-center { transform: translateY(var(--hy, 0px)) scale(var(--hs, 1)); transform-origin: 50% 180px; }
+  /* hero is scaled as one unit by main.js (zoom + --hx); the card keeps its 65px offset under the nav */
+  .s-hero .hero-card { top: calc(65 * var(--hx, 1px)); }
+  /* the centre group stays together around the card centre (691); corner notes keep their distance to the inner frame (28 / 1354) */
+  .s-hero .hero-center > .r { left: calc(691 * var(--hx, 1px) + (var(--dl) - 691) * 1px); }
+  .s-hero .corner-note, .s-hero .hl { left: calc(28 * var(--hx, 1px) + (var(--dl) - 28) * 1px); }
+  .s-hero .corner-note:first-of-type, .s-hero .hl:first-of-type { left: calc(1354 * var(--hx, 1px) - (1354 - var(--dl)) * 1px); }
 }
 
 /* ---------- About: flowing text column + media group (anchored corners) ---------- */
