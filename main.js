@@ -14,6 +14,48 @@
   window.addEventListener('resize', setZoom);
   setZoom();
 
+  // ---------- Desktop screen fit: hero = exactly one screen, every other area fits the window height ----------
+  var FIT_SECTIONS = '.s-about, .s-services, .s-why, .s-philo, .s-forwhom, .s-testi, .s-gift, .s-faq, .s-contact';
+  var MIN_FIT = 0.55;   // never shrink an area below 55% – text would get too small to read
+  var FIT_PAD = 60;     // breathing room kept around an area (design px)
+  function fitScreen() {
+    var sections = document.querySelectorAll(FIT_SECTIONS);
+    sections.forEach(function (s) { s.style.zoom = ''; });
+    var off = !desktopQuery.matches || root.classList.contains('static');
+    if (off) {
+      ['--hd', '--hy', '--hs'].forEach(function (p) { root.style.removeProperty(p); });
+    } else {
+      var z = parseFloat(root.style.getPropertyValue('--z')) || 1;
+      var screenH = window.innerHeight / z;           // window height in design px
+      // Hero: card from y=65 to 41px above the fold
+      var H = Math.max(440, screenH - 65 - 41);
+      var s = Math.max(0.6, Math.min(1, (H - 190) / 404));   // centre group = title → buttons, 404px tall
+      var top = Math.max(95, (H - 404 * s) / 2 - 15 * s);
+      root.style.setProperty('--hd', (H - 794) + 'px');
+      root.style.setProperty('--hs', s);
+      root.style.setProperty('--hy', (top - 180) + 'px');
+      // Other areas: measure the real content and zoom the area down if it is taller than the window
+      var avail = screenH - FIT_PAD;
+      sections.forEach(function (sec) {
+        var topY = Infinity, bottomY = -Infinity;
+        sec.querySelectorAll('.a, .faq-flow').forEach(function (el) {
+          var r = el.getBoundingClientRect();
+          if (!r.width && !r.height) return;
+          topY = Math.min(topY, r.top); bottomY = Math.max(bottomY, r.bottom);
+        });
+        if (!isFinite(topY)) return;
+        var contentH = (bottomY - topY) / z;
+        var k = Math.max(MIN_FIT, Math.min(1, avail / contentH));
+        if (k < 0.999) sec.style.zoom = k;
+      });
+    }
+    if (window.ScrollTrigger) window.ScrollTrigger.refresh();
+  }
+  var fitTimer;
+  window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer = setTimeout(fitScreen, 80); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitScreen);
+  fitScreen();
+
   // ---------- Mobile menu ----------
   var menuBtn = document.querySelector('.menu-btn');
   var menu = document.getElementById('m-menu');
