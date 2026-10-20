@@ -21,7 +21,7 @@
     // Scale the fixed-size design stage to the viewport before first paint (see main.js).
     (function (d) {
       var w = d.documentElement.clientWidth, desk = w >= 1100;
-      d.documentElement.style.setProperty('--z', desk ? Math.min(w, 1920) / 1440 : Math.min(w, 546) / 390);
+      d.documentElement.style.setProperty('--z', desk ? w / 1440 : Math.min(w, 546) / 390);
       if (/[?&]static\b/.test(location.search)) d.documentElement.classList.add('static');
       else if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) d.documentElement.classList.add('anim');
     })(document);

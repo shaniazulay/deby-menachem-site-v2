@@ -8,7 +8,7 @@
   // ---------- Stage zoom: the 1440 / 390 design frame always fills the viewport ----------
   function setZoom() {
     var w = root.clientWidth;
-    var z = desktopQuery.matches ? Math.min(w, 1920) / 1440 : Math.min(w, 546) / 390;
+    var z = desktopQuery.matches ? w / 1440 : Math.min(w, 546) / 390;
     root.style.setProperty('--z', z);
   }
   window.addEventListener('resize', setZoom);
