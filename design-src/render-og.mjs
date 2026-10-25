@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+import sharp from 'sharp';
+import { pathToFileURL } from 'url';
+const b = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe' });
+const p = await b.newPage({ viewport: { width: 1200, height: 630 } });
+await p.goto(pathToFileURL(process.cwd() + '/design-src/og.html').href, { waitUntil: 'networkidle' });
+await p.evaluate(() => document.fonts.ready);
+await p.locator('#og').screenshot({ path: 'assets/img/og-image.png' });
+const p2 = await b.newPage({ viewport: { width: 180, height: 180 } });
+await p2.setContent('<body style="margin:0;background:#2b1f1a;display:grid;place-items:center;height:180px"><img src="' + pathToFileURL(process.cwd() + '/assets/favicon.svg').href + '" style="width:120px;height:120px"></body>');
+await p2.waitForTimeout(300);
+await p2.screenshot({ path: 'assets/apple-touch-icon.png' });
+await b.close();
+await sharp('assets/img/og-image.png').jpeg({ quality: 86, mozjpeg: true }).toFile('assets/img/og-image.jpg');
